@@ -242,6 +242,11 @@ ENV NODE_ENV=production
 # This reduces the attack surface by preventing container escape via root privileges
 USER node
 
+# Startup wrapper:
+# - adds a small delay so Docker/Railway healthchecks don't run before the
+#   gateway has finished initializing
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+
 # Start gateway server with default config.
 # Binds to loopback (127.0.0.1) by default for security.
 #
@@ -254,6 +259,7 @@ USER node
 #   - GET /healthz (liveness) and GET /readyz (readiness)
 #   - aliases: /health and /ready
 # For external access from host/ingress, override bind to "lan" and set auth.
-HEALTHCHECK --interval=3m --timeout=10s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=10 \
   CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
