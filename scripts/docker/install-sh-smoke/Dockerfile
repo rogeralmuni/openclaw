@@ -4,8 +4,8 @@ FROM node:24-bookworm-slim@sha256:b4687aef2571c632a1953695ce4d61d6462a7eda471fe6
 
 # Smoke images are pinned and short-lived, so skip distro upgrades here and
 # spend the time budget on installer coverage instead.
-RUN --mount=type=cache,id=openclaw-install-sh-smoke-apt-cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=openclaw-install-sh-smoke-apt-lists,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=s/6416f477-641a-4809-87f2-06f6b2f6ad20-/var/cache/apt,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/6416f477-641a-4809-87f2-06f6b2f6ad20-/var/lib/apt,target=/var/lib/apt,sharing=locked \
   set -eux; \
   for attempt in 1 2 3; do \
     if apt-get update -o Acquire::Retries=3; then break; fi; \
