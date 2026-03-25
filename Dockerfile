@@ -259,7 +259,10 @@ COPY --chmod=755 entrypoint.sh /entrypoint.sh
 #   - GET /healthz (liveness) and GET /readyz (readiness)
 #   - aliases: /health and /ready
 # For external access from host/ingress, override bind to "lan" and set auth.
+#
+# Railway may inject a runtime port (e.g. via OPENCLAW_GATEWAY_PORT/PORT),
+# so the healthcheck must not hardcode the gateway port.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=10 \
-  CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "const port=process.env.OPENCLAW_GATEWAY_PORT||process.env.PORT||'18789';fetch('http://127.0.0.1:'+port+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
+CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured", "--bind", "lan", "--auth", "trusted-proxy"]
